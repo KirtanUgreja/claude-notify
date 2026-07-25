@@ -39,7 +39,14 @@ if [ -z "$cwd" ] && [ ! -t 0 ]; then
 fi
 if [ -n "$cwd" ]; then
   project=$(basename "$cwd")
-  [ -n "$project" ] && TITLE="$project — $TITLE"
+  # ASCII hyphen on Windows: PowerShell 5.1 reads arguments in the system ANSI
+  # codepage, which mangles an em-dash into mojibake. Keep the nicer dash where
+  # the encoding is dependable.
+  case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) sep="-" ;;
+    *)                    sep="—" ;;
+  esac
+  [ -n "$project" ] && TITLE="$project $sep $TITLE"
 fi
 
 [ -n "$TEST" ] && echo "claude-notify: uname=$(uname -s) kind=$KIND title=$TITLE"

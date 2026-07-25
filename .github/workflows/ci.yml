@@ -31,6 +31,19 @@ jobs:
             "scripts/notify.ps1", [ref]$null, [ref]$null)
           Write-Host "notify.ps1 parses"
 
+      - name: notify.ps1 is pure ASCII
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          # Windows PowerShell 5.1 reads a BOM-less -File script in the system
+          # ANSI codepage, so a non-ASCII byte becomes mojibake and can break
+          # parsing outright. ParseFile above reads UTF-8 and will NOT catch it.
+          if LC_ALL=C grep -n '[^ -~]' scripts/notify.ps1; then
+            echo "::error::non-ASCII byte in notify.ps1 (see lines above)"
+            exit 1
+          fi
+          echo "notify.ps1 is ASCII-clean"
+
       - name: Each event kind exits 0
         shell: bash
         run: |

@@ -1,4 +1,4 @@
-# claude-notify (Windows) — sound + toast when Claude Code wants you.
+# claude-notify (Windows) - sound + toast when Claude Code wants you.
 # Notification-only. Never throws; missing features degrade to silence.
 # Normally invoked by notify.sh (the cross-platform entry point), not directly.
 param(
@@ -19,17 +19,17 @@ if ($env:CLAUDE_NOTIFY_SOUND)          { $Sound  = $env:CLAUDE_NOTIFY_SOUND }
 # Label with the project name, matching notify.sh. On Windows the hook calls
 # this script directly (a bare `sh` cannot be spawned), so the title is built
 # here rather than passed in already-labelled.
-# When notify.sh is the caller it has already prefixed the title, so skip —
+# When notify.sh is the caller it has already prefixed the title, so skip -
 # otherwise the project name would appear twice.
-if ($env:CLAUDE_PROJECT_DIR -and $Title -notmatch " — ") {
+if ($env:CLAUDE_PROJECT_DIR -and $Title -notmatch " - ") {
   try {
     $project = Split-Path -Leaf $env:CLAUDE_PROJECT_DIR
-    if ($project) { $Title = "$project — $Title" }
+    if ($project) { $Title = "$project - $Title" }
   } catch { }
 }
 
 # Sound: play the system WAV if present, else console beep.
-# PlaySync, not Play — Play() is async and the script exits before it is heard.
+# PlaySync, not Play - Play() is async and the script exits before it is heard.
 if (-not $Quiet) {
   try {
     $wav = $Sound
@@ -47,7 +47,7 @@ if (-not $Quiet) {
 }
 
 # Toast: balloon tip via WinForms (available on all supported Windows).
-# System.Drawing must load too — SystemIcons lives there, and without it the
+# System.Drawing must load too - SystemIcons lives there, and without it the
 # icon line throws and the whole toast is silently skipped.
 if (-not $Silent) {
   try {
