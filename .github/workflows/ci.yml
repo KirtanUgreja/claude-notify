@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Runners have no audio device and no desktop, so this cannot prove you hear
+  # anything. It proves what actually broke before: wrong branch taken, non-zero
+  # exit, bad syntax, or a hook that hangs the session.
+  script:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell syntax
+        shell: bash
+        run: sh -n scripts/notify.sh
+
+      - name: PowerShell syntax
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $null = [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/notify.ps1", [ref]$null, [ref]$null)
+          Write-Host "notify.ps1 parses"
+
+      - name: Each event kind exits 0
+        shell: bash
+        run: |
+          for kind in permission idle done; do
+            sh scripts/notify.sh "$kind" --test </dev/null
+          done
+
+      - name: Detects the platform
+        shell: bash
+        run: |
+          out=$(sh scripts/notify.sh permission --test </dev/null)
+          echo "$out"
+          case "${{ runner.os }}" in
+            Linux)   echo "$out" | grep -q "uname=Linux" ;;
+            macOS)   echo "$out" | grep -q "uname=Darwin" ;;
+            Windows) echo "$out" | grep -qE "uname=(MINGW|MSYS|CYGWIN)" ;;
+          esac
+
+      - name: Reads cwd from the hook payload
+        shell: bash
+        run: |
+          out=$(echo '{"cwd":"/tmp/demo-project"}' \
+                | env -u CLAUDE_PROJECT_DIR sh scripts/notify.sh permission --test)
+          echo "$out"
+          echo "$out" | grep -q "demo-project"
+
+      - name: Never blocks on an open stdin pipe
+        shell: bash
+        run: |
+          # A hook that waits for EOF would freeze the user's session.
+          env -u CLAUDE_PROJECT_DIR sh scripts/notify.sh permission --test \
+            < /dev/zero & pid=$!
+          for _ in $(seq 1 10); do
+            kill -0 $pid 2>/dev/null || break
+            sleep 1
+          done
+          if kill -0 $pid 2>/dev/null; then
+            kill -9 $pid; echo "::error::notify.sh hung reading stdin"; exit 1
+          fi
+          wait $pid
+
+      - name: Respects CLAUDE_NOTIFY_OFF
+        shell: bash
+        run: |
+          out=$(CLAUDE_NOTIFY_OFF=1 sh scripts/notify.sh permission --test </dev/null)
+          test -z "$out" || { echo "::error::OFF still produced: $out"; exit 1; }
+
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Valid JSON
+        run: |
+          for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json hooks/hooks.json; do
+            python3 -c "import json,sys; json.load(open('$f'))" && echo "$f ok"
+          done
+      - name: Plugin name matches marketplace entry
+        run: |
+          python3 - <<'PY'
+          import json
+          p = json.load(open('.claude-plugin/plugin.json'))['name']
+          m = [x['name'] for x in json.load(open('.claude-plugin/marketplace.json'))['plugins']]
+          assert p in m, f"plugin.json name {p!r} not in marketplace {m}"
+          print(f"{p} listed")
+          PY

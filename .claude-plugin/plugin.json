@@ -1,7 +1,7 @@
 {
   "name": "claude-notify",
   "description": "Plays a sound and shows a desktop notification when Claude Code is waiting for your permission or input.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Kirtan Ugreja",
     "email": "ugrejakirtan0@gmail.com"
