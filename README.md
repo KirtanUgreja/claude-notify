@@ -30,6 +30,14 @@ Then restart Claude Code, or start a new session.
 Same two commands on every platform — no paths to edit, no `settings.json` to
 hand-write.
 
+### Update
+
+```
+/plugin marketplace update claude-notify
+```
+
+Pulls the latest version. Restart Claude Code afterwards.
+
 ## Configure
 
 Set these in your shell profile or the `env` block of `settings.json` — no need to
