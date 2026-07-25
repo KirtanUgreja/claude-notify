@@ -1,0 +1,15 @@
+{
+  "name": "claude-notify",
+  "description": "Cross-platform desktop notifications for Claude Code.",
+  "owner": {
+    "name": "Kirtan Ugreja",
+    "email": "ugrejakirtan0@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "claude-notify",
+      "source": "./",
+      "description": "Plays a sound and shows a desktop notification when Claude Code is waiting for your permission or input."
+    }
+  ]
+}
