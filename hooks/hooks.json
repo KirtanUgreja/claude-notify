@@ -1,4 +1,6 @@
 {
+  "_comment": "Two entries per event on purpose. Windows cannot spawn a bare `sh` (Git Bash's sh.exe is not on the system PATH), so it calls powershell.exe directly; macOS/Linux cannot spawn powershell.exe. Whichever entry does not apply fails to spawn, which is a silent non-blocking error, so exactly one fires per platform.",
+
   "hooks": {
     "Notification": [
       {
@@ -8,6 +10,16 @@
             "type": "command",
             "command": "sh",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh", "permission"],
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                     "${CLAUDE_PLUGIN_ROOT}/scripts/notify.ps1",
+                     "-Title", "Claude needs you",
+                     "-Body", "Waiting for permission.",
+                     "-Kind", "permission"],
             "async": true
           }
         ]
@@ -20,6 +32,16 @@
             "command": "sh",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh", "idle"],
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                     "${CLAUDE_PLUGIN_ROOT}/scripts/notify.ps1",
+                     "-Title", "Claude is waiting",
+                     "-Body", "Ready for your next prompt.",
+                     "-Kind", "idle"],
+            "async": true
           }
         ]
       },
@@ -30,6 +52,16 @@
             "type": "command",
             "command": "sh",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh", "permission"],
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                     "${CLAUDE_PLUGIN_ROOT}/scripts/notify.ps1",
+                     "-Title", "Claude needs you",
+                     "-Body", "A background session is waiting.",
+                     "-Kind", "permission"],
             "async": true
           }
         ]
@@ -42,6 +74,16 @@
             "command": "sh",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh", "done"],
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                     "${CLAUDE_PLUGIN_ROOT}/scripts/notify.ps1",
+                     "-Title", "Claude finished",
+                     "-Body", "A background session finished.",
+                     "-Kind", "done"],
+            "async": true
           }
         ]
       },
@@ -53,10 +95,21 @@
             "command": "sh",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh", "permission"],
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                     "${CLAUDE_PLUGIN_ROOT}/scripts/notify.ps1",
+                     "-Title", "Claude needs you",
+                     "-Body", "A form is waiting for input.",
+                     "-Kind", "permission"],
+            "async": true
           }
         ]
       }
     ],
+
     "Stop": [
       {
         "hooks": [
@@ -64,6 +117,16 @@
             "type": "command",
             "command": "sh",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh", "done"],
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                     "${CLAUDE_PLUGIN_ROOT}/scripts/notify.ps1",
+                     "-Title", "Claude finished",
+                     "-Body", "Response complete.",
+                     "-Kind", "done"],
             "async": true
           }
         ]

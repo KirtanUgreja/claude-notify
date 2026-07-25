@@ -11,6 +11,23 @@ param(
   [switch]$Test
 )
 
+if ($env:CLAUDE_NOTIFY_OFF -eq "1") { exit 0 }
+if ($env:CLAUDE_NOTIFY_QUIET -eq "1")  { $Quiet  = $true }
+if ($env:CLAUDE_NOTIFY_SILENT -eq "1") { $Silent = $true }
+if ($env:CLAUDE_NOTIFY_SOUND)          { $Sound  = $env:CLAUDE_NOTIFY_SOUND }
+
+# Label with the project name, matching notify.sh. On Windows the hook calls
+# this script directly (a bare `sh` cannot be spawned), so the title is built
+# here rather than passed in already-labelled.
+# When notify.sh is the caller it has already prefixed the title, so skip —
+# otherwise the project name would appear twice.
+if ($env:CLAUDE_PROJECT_DIR -and $Title -notmatch " — ") {
+  try {
+    $project = Split-Path -Leaf $env:CLAUDE_PROJECT_DIR
+    if ($project) { $Title = "$project — $Title" }
+  } catch { }
+}
+
 # Sound: play the system WAV if present, else console beep.
 # PlaySync, not Play — Play() is async and the script exits before it is heard.
 if (-not $Quiet) {

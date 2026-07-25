@@ -72,6 +72,33 @@ jobs:
           fi
           wait $pid
 
+      - name: Hook commands are spawnable on this platform
+        shell: bash
+        run: |
+          # The Windows bug this guards: hooks.json used a bare `sh`, which
+          # Claude Code cannot spawn on Windows (Git Bash's sh.exe is not on the
+          # system PATH), so the hook silently never ran. Assert that whichever
+          # entry is meant to fire here actually resolves to an executable.
+          python3 - <<'PY'
+          import json, shutil, platform, sys
+          cmds = {h["command"]
+                  for entries in json.load(open("hooks/hooks.json"))["hooks"].values()
+                  for e in entries for h in e["hooks"]}
+          want = "powershell.exe" if platform.system() == "Windows" else "sh"
+          assert want in cmds, f"no {want!r} entry in hooks.json (have {cmds})"
+          assert shutil.which(want), f"{want!r} is in hooks.json but not spawnable"
+          print(f"{want} resolves to {shutil.which(want)}")
+          PY
+
+      - name: notify.ps1 runs standalone as the hook calls it
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          # On Windows the hook invokes notify.ps1 directly, not via notify.sh.
+          powershell.exe -NoProfile -ExecutionPolicy Bypass \
+            -File scripts/notify.ps1 -Title "CI check" -Body "direct call" \
+            -Kind permission -Silent -Test
+
       - name: Respects CLAUDE_NOTIFY_OFF
         shell: bash
         run: |
