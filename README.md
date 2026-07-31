@@ -27,6 +27,25 @@ finished:
 
 Then restart Claude Code, or start a new session.
 
+**Install scope matters.** Running `/plugin install` while sitting inside a
+project can install it scoped to that project only — the hooks then stay silent
+in every other project, with no error anywhere. If notifications aren't firing
+and everything in [Verify](#verify) checks out, confirm the scope:
+
+```
+claude plugin list
+```
+
+or check `~/.claude/plugins/installed_plugins.json` for `"scope": "local"` /
+`"project"` next to `claude-notify`. If it's not `"user"`, reinstall it globally:
+
+```
+claude plugin uninstall claude-notify --scope local
+claude plugin install claude-notify@claude-notify --scope user
+```
+
+then fully restart Claude Code (not just a new session).
+
 Same two commands on every platform and every surface — CLI, the Claude Code
 desktop app, and the Claude Code IDE extension (VS Code, JetBrains). Type them into
 the Claude Code prompt wherever you normally talk to Claude; no paths to edit, no
