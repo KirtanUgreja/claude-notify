@@ -27,8 +27,14 @@ finished:
 
 Then restart Claude Code, or start a new session.
 
-Same two commands on every platform — no paths to edit, no `settings.json` to
-hand-write.
+Same two commands on every platform and every surface — CLI, the Claude Code
+desktop app, and the Claude Code IDE extension (VS Code, JetBrains). Type them into
+the Claude Code prompt wherever you normally talk to Claude; no paths to edit, no
+`settings.json` to hand-write.
+
+Hooks run locally, so this only fires where Claude Code itself runs locally
+(CLI, desktop app, IDE extension) — not for sessions running in a remote/cloud
+sandbox with no desktop to notify.
 
 ### Update
 
