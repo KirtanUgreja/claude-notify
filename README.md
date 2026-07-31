@@ -98,7 +98,7 @@ The plugin matches the notification types worth interrupting you for
 |---|---|---|
 | macOS | `afplay` on `Glass.aiff` / `Tink.aiff` | `osascript` banner |
 | Linux | `paplay`, falling back to `aplay` | `notify-send` |
-| Windows | `Media.SoundPlayer` on `Windows Notify.wav` | WinForms balloon tip |
+| Windows | `Media.SoundPlayer` on `Windows Notify.wav` | Action Center toast (WinForms balloon as fallback) |
 
 Hooks run `async`, so the alert never delays your session. The project name comes
 from `CLAUDE_PROJECT_DIR`, falling back to the `cwd` in the hook's stdin payload.
@@ -122,9 +122,14 @@ This avoids two traps that break hand-written Windows hooks:
   valid escape) and makes the *entire* settings file fail to parse, so no hooks load
   at all. The plugin uses `${CLAUDE_PLUGIN_ROOT}` and sidesteps this.
 
-The Windows balloon tip uses `NotifyIcon`, which Windows 10/11 can suppress
-depending on your notification settings. If `--test` reports no error but you see no
-banner, check Settings → System → Notifications.
+The toast goes through the real Action Center API (`Windows.UI.Notifications`)
+under PowerShell's own registered app identity, not a bare `NotifyIcon` balloon —
+plain balloons from an unregistered, short-lived process are frequently dropped
+silently by Windows 10/11 regardless of whether the script ran correctly. A
+`NotifyIcon` balloon is still used as a fallback if the Action Center API itself
+is unavailable. Either way, if `--test` reports no error but you see no banner,
+check Settings → System → Notifications → make sure "Windows PowerShell" is
+allowed, and that Focus Assist isn't set to suppress it.
 
 ## Layout
 
